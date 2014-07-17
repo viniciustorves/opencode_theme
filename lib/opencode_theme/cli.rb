@@ -35,7 +35,23 @@ module OpencodeTheme
       end
     end
 
-
+desc "upload FILE", "upload all theme assets to shop"
+    method_option :quiet, :type => :boolean, :default => false
+    def upload(*keys)
+      assets = keys.empty? ? local_assets_list : keys
+      assets.each do |asset|
+        send_asset(asset, options['quiet'])
+      end
+      say("Done.", :green) unless options['quiet']
+    end
+ desc "remove FILE", "remove theme asset"
+    method_option :quiet, :type => :boolean, :default => false
+    def remove(*keys)
+      keys.each do |key|
+        delete_asset(key, options['quiet'])
+      end
+      say("Done.", :green) unless options['quiet']
+    end
  desc "bootstrap API_KEY PASSWORD STORE THEME_NAME", "bootstrap with Timber to shop and configure local directory. Include master if you'd like to use the latest build for the theme"
     method_option :master, :type => :boolean, :default => false
     def bootstrap(api_key=nil, password=nil, store=nil, theme_name=nil, theme_base=nil)

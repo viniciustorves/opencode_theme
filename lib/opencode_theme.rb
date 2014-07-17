@@ -13,7 +13,7 @@ module OpencodeTheme
   LAST_KNOWN_STABLE = "v1.1.0"
 
   URL_API = "http://cronit.rafaeltakashi.com:9000"
-
+  #URL_API = "http://rendmine.dev"
   def self.manage_timer(response)
    # return unless response.headers['x-shopify-shop-api-call-limit']
   #  @@current_api_call_count, @@total_api_calls = response.headers['x-shopify-shop-api-call-limit'].split('/')
@@ -127,13 +127,17 @@ puts "response=>#{response.inspect}"
   def self.send_asset(data)
     puts "no path=>#{path}"
   	puts "opencode.send_asset=>#{data.inspect}"
-    response = opencode_theme.put(path, :body =>{:asset => data})
+         #opencode.send_asset=>{:key=>"assets/checkout.css", :value=>"ssas
+    #response = opencode_theme.put(path, :body =>{:asset => data})
+
+    response = opencode_theme.get(path, :body =>{:asset => data})
     manage_timer(response)
     response
   end
 
   def self.delete_asset(asset)
-    response = opencode_theme.delete(path, :body =>{:asset => {:key => asset}})
+#    response = opencode_theme.delete(path, :body =>{:asset => {:key => asset}})
+    response = opencode_theme.get(path, :body =>{:asset => {:key => asset}})
     manage_timer(response)
     puts "response=>#{response.inspect}"
     response
