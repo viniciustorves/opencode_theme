@@ -27,3 +27,11 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+
+
+http://cronit.rafaeltakashi.com:9000/opencode/themes/1404985891/assets?asset[key]=assets/checkout.css
+
+curl -X POST http://cronit.rafaeltakashi.com:9000/v1/finish/gtw -d "action=shopline"
+
+assets/checkout.css

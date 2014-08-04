@@ -35,15 +35,16 @@ module OpencodeTheme
       end
     end
 
-desc "upload FILE", "upload all theme assets to shop"
-    method_option :quiet, :type => :boolean, :default => false
-    def upload(*keys)
-      assets = keys.empty? ? local_assets_list : keys
-      assets.each do |asset|
-        send_asset(asset, options['quiet'])
+    desc "upload FILE", "upload all theme assets to shop"
+      method_option :quiet, :type => :boolean, :default => false
+      def upload(*keys)
+        assets = keys.empty? ? local_assets_list : keys
+        assets.each do |asset|
+          send_asset(asset, options['quiet'])
+        end
+        say("Done.", :green) unless options['quiet']
       end
-      say("Done.", :green) unless options['quiet']
-    end
+
  desc "remove FILE", "remove theme asset"
     method_option :quiet, :type => :boolean, :default => false
     def remove(*keys)
@@ -52,17 +53,25 @@ desc "upload FILE", "upload all theme assets to shop"
       end
       say("Done.", :green) unless options['quiet']
     end
+
  desc "bootstrap API_KEY PASSWORD STORE THEME_NAME", "bootstrap with Timber to shop and configure local directory. Include master if you'd like to use the latest build for the theme"
     method_option :master, :type => :boolean, :default => false
     def bootstrap(api_key=nil, password=nil, store=nil, theme_name=nil, theme_base=nil)
       theme_name ||= 'default'
       theme_base ||= 'default'
-       OpencodeTheme.config = {:api_key => api_key, :password => password, :store => store}
+      OpencodeTheme.config = {:api_key => api_key, :password => password, :store => store}
+      check_config = OpencodeTheme.check_config
+      if check_config.success?
+        say("Configuration [OK]", :green)
+      else
+        report_error(Time.now, "Configuration [FAIL]", check_config.body)
+        return
+      end
 
       response = OpencodeTheme.theme_new(theme_base, theme_name)
       puts "response=>#{response.inspect}"
       if response[:success]
-        say("Create #{theme_name} theme on store [#{config[:store]}]", :green)
+        say("Create #{theme_name} theme on store [#{store}]", :green)
       else
         report_error(Time.now, "Could not create a new theme", response)
       end
@@ -71,7 +80,7 @@ desc "upload FILE", "upload all theme assets to shop"
       empty_directory(theme_name)
 
       say("Saving configuration to #{theme_name}", :green)
-      OpencodeTheme.config.merge!(theme_id: response[:response]['theme_id'])
+      OpencodeTheme.config.merge!(theme_id: response[:response]['theme_id'], preview_url: response[:response]['preview_url'])
       create_file("#{theme_name}/config.yml", OpencodeTheme.config.to_yaml)
 
       say("Downloading #{theme_name} assets from Opencode")
@@ -98,17 +107,14 @@ desc "upload FILE", "upload all theme assets to shop"
       say("Done.", :green) unless options['quiet']
     end
 
-
-
-
- desc "watch", "upload and delete individual theme assets as they change, use the --keep_files flag to disable remote file deletion"
+    desc "watch", "upload and delete individual theme assets as they change, use the --keep_files flag to disable remote file deletion"
     method_option :quiet, :type => :boolean, :default => false
     method_option :keep_files, :type => :boolean, :default => false
     def watch
-      puts "Watching current folder: #{Dir.pwd}"
+      puts "111---->Watching current folder: #{Dir.pwd}"
       watcher do |filename, event|
         filename = filename.gsub("#{Dir.pwd}/", '')
-
+puts "filename=>#{filename.inspect}"
         next unless local_assets_list.include?(filename)
         action = if [:changed, :new].include?(event)
           :send_asset
@@ -134,6 +140,12 @@ desc "upload FILE", "upload all theme assets to shop"
       end
     end
 
+    desc "open", "open the store in your browser"
+    def open(*keys)
+      if Launchy.open opencode_theme_url
+        say("Done.", :green)
+      end
+    end
 
     protected
 
@@ -150,9 +162,14 @@ desc "upload FILE", "upload all theme assets to shop"
     end
 
     def binary_file?(path)
+      puts "binary_file=>#{path}"
       !MimeMagic.by_path(path).text?
     end
 
+    def opencode_theme_url
+      config[:preview_url]
+    end
+    
     def download_asset(key)
 
       puts "download_asset"
@@ -174,9 +191,10 @@ desc "upload FILE", "upload all theme assets to shop"
     end
 
     def send_asset(asset, quiet=false)
-      puts "send_asset"
+      puts "send_asset=>#{asset.inspect}"
       return unless valid?(asset)
       data = {:key => asset}
+      xx = File.read("#{Dir.pwd}/#{asset}")
       content = File.read(asset)
       if binary_file?(asset) || OpencodeTheme.is_binary_data?(content)
         content = File.open(asset, "rb") { |io| io.read }
@@ -184,12 +202,9 @@ desc "upload FILE", "upload all theme assets to shop"
       else
         data.merge!(:value => content)
       end
-
       response = show_during("[#{timestamp}] Uploading: #{asset}", quiet) do
         OpencodeTheme.send_asset(data)
       end
-      puts "response=>#{response.inspect}"
-      puts "body=>#{response.body.inspect}"
       if response.success?
         say("[#{timestamp}] Uploaded: #{asset}", :green) unless quiet
       else
@@ -242,7 +257,6 @@ desc "upload FILE", "upload all theme assets to shop"
       return unless valid?(key)
       notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
       asset = OpencodeTheme.get_asset(key)
-      puts "asset->#{asset}"
       if asset['value']
         # For CRLF line endings
         content = asset['value'].gsub("\r", "")
