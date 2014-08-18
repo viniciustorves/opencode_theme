@@ -24,10 +24,14 @@ module OpencodeTheme
     
     #opencode configure apikey pass loja
     desc "configure API_KEY PASSWORD STORE THEME_ID", "generate a config file for the store to connect to"
-    def configure(api_key=nil, password=nil, store=nil)
-      config = {:api_key => api_key, :password => password, :store => store}
+    def configure(api_key=nil, password=nil, theme_id=nil)
+      config = {:api_key => api_key, :password => password, :theme_id => theme_id}
       OpencodeTheme.config = config
-      if OpencodeTheme.check_config.success?
+      response = OpencodeTheme.check_config
+      if response[:success]
+        puts "response=>#{response.inspect}"
+        config.merge!(:preview_url => response[:response]['url_preview'])
+
          create_file('config.yml', config.to_yaml, :force => true)
         say("Configuration [OK]", :green)
       else
@@ -56,31 +60,31 @@ module OpencodeTheme
 
  desc "bootstrap API_KEY PASSWORD STORE THEME_NAME", "bootstrap with Timber to shop and configure local directory. Include master if you'd like to use the latest build for the theme"
     method_option :master, :type => :boolean, :default => false
-    def bootstrap(api_key=nil, password=nil, store=nil, theme_name=nil, theme_base=nil)
-      theme_name ||= 'default'
-      theme_base ||= 'default'
+    def bootstrap(api_key=nil, password=nil, store=nil, theme_name='default', theme_base='default')
       OpencodeTheme.config = {:api_key => api_key, :password => password, :store => store}
       check_config = OpencodeTheme.check_config
-      if check_config.success?
+      if check_config[:success]
         say("Configuration [OK]", :green)
       else
-        report_error(Time.now, "Configuration [FAIL]", check_config.body)
+        report_error(Time.now, "Configuration [FAIL]", check_config[:response])
         return
       end
+puts "criou a config"
 
       response = OpencodeTheme.theme_new(theme_base, theme_name)
       puts "response=>#{response.inspect}"
       if response[:success]
         say("Create #{theme_name} theme on store [#{store}]", :green)
       else
-        report_error(Time.now, "Could not create a new theme", response)
+        report_error(Time.now, "Could not create a new theme", response[:response])
+        return
       end
 
       say("Creating directory named #{theme_name}", :green)
       empty_directory(theme_name)
 
       say("Saving configuration to #{theme_name}", :green)
-      OpencodeTheme.config.merge!(theme_id: response[:response]['theme_id'], preview_url: response[:response]['preview_url'])
+      OpencodeTheme.config.merge!(theme_id: response[:response]['theme_id'], preview_url: response[:response]['preview'])
       create_file("#{theme_name}/config.yml", OpencodeTheme.config.to_yaml)
 
       say("Downloading #{theme_name} assets from Opencode")
@@ -95,7 +99,7 @@ module OpencodeTheme
     def download(*keys)
       puts "download=>#{keys.inspect}"
       assets = keys.empty? ? OpencodeTheme.asset_list : keys
-
+puts "=>assets =>#{assets.inspect}"
       if options['exclude']
         assets = assets.delete_if { |asset| asset =~ Regexp.new(options['exclude']) }
       end
@@ -170,25 +174,6 @@ puts "filename=>#{filename.inspect}"
       config[:preview_url]
     end
     
-    def download_asset(key)
-
-      puts "download_asset"
-      return unless valid?(key)
-      notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
-      asset = OpencodeTheme.get_asset(key)
-      puts "asset->#{asset}"
-      if asset['value']
-        # For CRLF line endings
-        content = asset['value'].gsub("\r", "")
-        format = "w"
-      elsif asset['attachment']
-        content = Base64.decode64(asset['attachment'])
-        format = "w+b"
-      end
-
-      FileUtils.mkdir_p(File.dirname(key))
-      File.open(key, format) {|f| f.write content} if content
-    end
 
     def send_asset(asset, quiet=false)
       puts "send_asset=>#{asset.inspect}"
@@ -243,31 +228,40 @@ puts "filename=>#{filename.inspect}"
     end
 
     def valid?(key)
-      return true if DEFAULT_WHITELIST.include?(key.split('/').first + "/")
-      say("'#{key}' is not in a valid file for theme uploads", :yellow)
-      say("Files need to be in one of the following subdirectories: #{DEFAULT_WHITELIST.join(' ')}", :yellow)
-      false
+    return true
+    #  return true if DEFAULT_WHITELIST.include?(key.split('/').first + "/")
+     # say("'#{key}' is not in a valid file for theme uploads", :yellow)
+     # say("Files need to be in one of the following subdirectories: #{DEFAULT_WHITELIST.join(' ')}", :yellow)
+     # false
     end
-   def timestamp(time = Time.now)
+    def timestamp(time = Time.now)
       time.strftime(TIMEFORMAT)
     end
- def download_asset(key)
-
+    
+    def download_asset(key)
       puts "download_asset"
       return unless valid?(key)
       notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
       asset = OpencodeTheme.get_asset(key)
-      if asset['value']
+      puts "dentro de download_asset===>#{asset.inspect}"
+      unless asset['key']
+        report_error(Time.now, "Could not download #{key}", asset)
+        return
+      end
+      if asset['content']
         # For CRLF line endings
-        content = asset['value'].gsub("\r", "")
+        content = asset['content'].gsub("\r", "")
         format = "w"
       elsif asset['attachment']
         content = Base64.decode64(asset['attachment'])
         format = "w+b"
       end
+puts "criar diretorio=>#{key.inspect}"
+file = key[1..key.length]
+puts "criar file=>#{file.inspect}"
 
-      FileUtils.mkdir_p(File.dirname(key))
-      File.open(key, format) {|f| f.write content} if content
+      FileUtils.mkdir_p(File.dirname(file))
+      File.open(file, format) {|f| f.write content} if content
     end
    def show_during(message = '', quiet = false, &block)
       print(message) unless quiet

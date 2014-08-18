@@ -59,8 +59,10 @@ module OpencodeTheme
     end
   end
 
-  def self.path
-    @path ||= config[:theme_id] ? "/opencode/themes/#{config[:theme_id]}/assets" : "/opencode/themes/assets"
+  def self.path(type = nil)
+    @path ||= config[:theme_id] ? "/api/themes/#{config[:theme_id]}/assets" : "/api/themes/assets"
+#    @path ||= config[:theme_id] ? "/opencode/themes/#{config[:theme_id]}/assets" : "/opencode/themes/assets"
+   # @path ||= config[:theme_id] ? "/api/themes/upfiles/#{config[:theme_id]}" : "/api/themes/upfiles"  if type == :get_asset
   end
 
 
