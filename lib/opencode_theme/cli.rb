@@ -23,8 +23,9 @@ module OpencodeTheme
     end
     
     desc "configure API_KEY PASSWORD THEME_ID", "generate a config for the store"
-    def configure(api_key=nil, password=nil, theme_id=nil)
-      config = {:api_key => api_key, :password => password, :theme_id => theme_id}
+    def configure(api_key=nil, password=nil, theme_id=nil, env="production")
+      config = {:api_key => api_key, :password => password, :theme_id => theme_id, :env => env.to_sym}
+      puts "config=>#{config.inspect}"
       OpencodeTheme.config = config
       response = OpencodeTheme.check_config
       if response[:success]
@@ -40,7 +41,7 @@ module OpencodeTheme
     desc "bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE", "bootstrap com o tema Padrao e configuracao local do diretorio. Include master if you'd like to use the latest build for the theme"
     method_option :master, :type => :boolean, :default => false
     def bootstrap(api_key=nil, password=nil, theme_name='default', theme_base='default')
-      OpencodeTheme.config = {:api_key => api_key, :password => password, :store => store}
+      OpencodeTheme.config = {:api_key => api_key, :password => password}
       
       check_config = OpencodeTheme.check_config
       
