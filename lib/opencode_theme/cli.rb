@@ -15,64 +15,44 @@ module OpencodeTheme
     include Thor::Actions
 
     IGNORE = %w(config.yml)
-    DEFAULT_WHITELIST = %w(layout/ assets/ config/ snippets/ templates/)
+    DEFAULT_WHITELIST = %w(configs/ css/ elements/ img/ layouts/ pages/)
     TIMEFORMAT = "%H:%M:%S"
 
     tasks.keys.abbrev.each do |shortcut, command|
       map shortcut => command.to_sym
     end
     
-    #opencode configure apikey pass loja
-    desc "configure API_KEY PASSWORD STORE THEME_ID", "generate a config file for the store to connect to"
+    desc "configure API_KEY PASSWORD THEME_ID", "generate a config for the store"
     def configure(api_key=nil, password=nil, theme_id=nil)
       config = {:api_key => api_key, :password => password, :theme_id => theme_id}
       OpencodeTheme.config = config
       response = OpencodeTheme.check_config
       if response[:success]
-        puts "response=>#{response.inspect}"
-        config.merge!(:preview_url => response[:response]['url_preview'])
-
-         create_file('config.yml', config.to_yaml, :force => true)
+        config.merge!(:preview_url => response[:response]['preview'])
+        create_file('config.yml', config.to_yaml, :force => true)
         say("Configuration [OK]", :green)
       else
         say("Configuration [FAIL]", :red)
       end
     end
 
-    desc "upload FILE", "upload all theme assets to shop"
-      method_option :quiet, :type => :boolean, :default => false
-      def upload(*keys)
-        assets = keys.empty? ? local_assets_list : keys
-        assets.each do |asset|
-          send_asset(asset, options['quiet'])
-        end
-        say("Done.", :green) unless options['quiet']
-      end
 
- desc "remove FILE", "remove theme asset"
-    method_option :quiet, :type => :boolean, :default => false
-    def remove(*keys)
-      keys.each do |key|
-        delete_asset(key, options['quiet'])
-      end
-      say("Done.", :green) unless options['quiet']
-    end
-
- desc "bootstrap API_KEY PASSWORD STORE THEME_NAME", "bootstrap with Timber to shop and configure local directory. Include master if you'd like to use the latest build for the theme"
+    desc "bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE", "bootstrap com o tema Padrao e configuracao local do diretorio. Include master if you'd like to use the latest build for the theme"
     method_option :master, :type => :boolean, :default => false
-    def bootstrap(api_key=nil, password=nil, store=nil, theme_name='default', theme_base='default')
+    def bootstrap(api_key=nil, password=nil, theme_name='default', theme_base='default')
       OpencodeTheme.config = {:api_key => api_key, :password => password, :store => store}
+      
       check_config = OpencodeTheme.check_config
+      
       if check_config[:success]
         say("Configuration [OK]", :green)
       else
         report_error(Time.now, "Configuration [FAIL]", check_config[:response])
         return
       end
-puts "criou a config"
 
       response = OpencodeTheme.theme_new(theme_base, theme_name)
-      puts "response=>#{response.inspect}"
+
       if response[:success]
         say("Create #{theme_name} theme on store [#{store}]", :green)
       else
@@ -93,17 +73,15 @@ puts "criou a config"
     end
 
 
-    desc "download FILE", "download the shops current theme assets"
+    desc "download FILE", "download the store theme files"
     method_option :quiet, :type => :boolean, :default => false
     method_option :exclude
     def download(*keys)
-      puts "download=>#{keys.inspect}"
       assets = keys.empty? ? OpencodeTheme.asset_list : keys
-puts "=>assets =>#{assets.inspect}"
       if options['exclude']
         assets = assets.delete_if { |asset| asset =~ Regexp.new(options['exclude']) }
       end
-      puts "todos assets=>#{assets.inspect}"
+
       assets.each do |asset|
         download_asset(asset)
         say("#{OpencodeTheme.api_usage} Downloaded: #{asset}", :green) unless options['quiet']
@@ -111,15 +89,53 @@ puts "=>assets =>#{assets.inspect}"
       say("Done.", :green) unless options['quiet']
     end
 
-    desc "watch", "upload and delete individual theme assets as they change, use the --keep_files flag to disable remote file deletion"
+
+    desc "publish Theme", "turns this Theme in standard layout"
+    def publish
+      response = OpencodeTheme.publish(config[:theme_id])
+      if response[:success]
+        say("Publishing Theme [OK]", :green)
+      else
+        say("Publishing Theme [FAIL]", :red)
+      end
+    end
+
+    desc "upload FILE", "upload all files to your store"
+    method_option :quiet, :type => :boolean, :default => false
+    def upload(*keys)
+      assets = keys.empty? ? local_assets_list : keys
+      assets.each do |asset|
+        send_asset("/#{asset}", options['quiet'])
+      end
+      say("Done.", :green) unless options['quiet']
+    end
+
+    desc "replace FILE", "completely replace theme files with local theme"
+    method_option :quiet, :type => :boolean, :default => false
+    def replace(*keys)
+      #To DO
+    end
+
+    desc "remove FILE", "remove theme file"
+    method_option :quiet, :type => :boolean, :default => false
+    def remove(*keys)
+      keys.each do |key|
+        delete_asset(key, options['quiet'])
+      end
+      say("Done.", :green) unless options['quiet']
+    end
+
+    desc "watch", "upload and delete individual theme files"
     method_option :quiet, :type => :boolean, :default => false
     method_option :keep_files, :type => :boolean, :default => false
     def watch
-      puts "111---->Watching current folder: #{Dir.pwd}"
       watcher do |filename, event|
-        filename = filename.gsub("#{Dir.pwd}/", '')
-puts "filename=>#{filename.inspect}"
-        next unless local_assets_list.include?(filename)
+        file_list = filename.gsub("/#{Dir.pwd}/", '')
+        unless local_assets_list.include?(file_list)
+          say("Unknown file [#{file_list}]", :red)
+          next 
+        end
+        filename = "/#{file_list}"
         action = if [:changed, :new].include?(event)
           :send_asset
         elsif event == :delete
@@ -138,7 +154,7 @@ puts "filename=>#{filename.inspect}"
       ruby_version += "-p#{RUBY_PATCHLEVEL}" if RUBY_PATCHLEVEL
       puts "Ruby: v#{ruby_version}"
       puts "Operating System: #{RUBY_PLATFORM}"
-      %w(Thor Listen HTTParty Launchy).each do |lib|
+      %w(Listen HTTParty Launchy).each do |lib|
         require "#{lib.downcase}/version"
         puts "#{lib}: v" +  Kernel.const_get("#{lib}::VERSION")
       end
@@ -151,14 +167,14 @@ puts "filename=>#{filename.inspect}"
       end
     end
 
-    protected
+
+protected
 
     def config
       @config ||= YAML.load_file 'config.yml'
     end
 
-    private
-
+private
 
     def notify_and_sleep(message)
       say(message, :red)
@@ -166,23 +182,20 @@ puts "filename=>#{filename.inspect}"
     end
 
     def binary_file?(path)
-      puts "binary_file=>#{path}"
-      !MimeMagic.by_path(path).text?
+     !MimeMagic.by_path(path).text?
     end
 
     def opencode_theme_url
       config[:preview_url]
     end
-    
+
 
     def send_asset(asset, quiet=false)
-      puts "send_asset=>#{asset.inspect}"
       return unless valid?(asset)
-      data = {:key => asset}
-      xx = File.read("#{Dir.pwd}/#{asset}")
-      content = File.read(asset)
+      data = {:key => "#{asset}"}
+      content = File.read("#{Dir.pwd}#{asset}")
       if binary_file?(asset) || OpencodeTheme.is_binary_data?(content)
-        content = File.open(asset, "rb") { |io| io.read }
+        content = File.open("#{Dir.pwd}#{asset}", "rb") { |io| io.read }
         data.merge!(:attachment => Base64.encode64(content))
       else
         data.merge!(:value => content)
@@ -208,9 +221,10 @@ puts "filename=>#{filename.inspect}"
         report_error(Time.now, "Could not remove #{key}", response)
       end
     end
+    
     def watcher
       FileWatcher.new(Dir.pwd).watch() do |filename, event|
-        yield(filename, event)
+        yield("/#{filename}", event)
       end
     end
 
@@ -228,42 +242,39 @@ puts "filename=>#{filename.inspect}"
     end
 
     def valid?(key)
-    return true
-    #  return true if DEFAULT_WHITELIST.include?(key.split('/').first + "/")
-     # say("'#{key}' is not in a valid file for theme uploads", :yellow)
-     # say("Files need to be in one of the following subdirectories: #{DEFAULT_WHITELIST.join(' ')}", :yellow)
-     # false
+      return true
+      #  return true if DEFAULT_WHITELIST.include?(key.split('/').first + "/")
+      # say("'#{key}' is not in a valid file for theme uploads", :yellow)
+      # say("Files need to be in one of the following subdirectories: #{DEFAULT_WHITELIST.join(' ')}", :yellow)
+      # false
     end
+
     def timestamp(time = Time.now)
       time.strftime(TIMEFORMAT)
     end
-    
+
     def download_asset(key)
-      puts "download_asset"
       return unless valid?(key)
       notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
       asset = OpencodeTheme.get_asset(key)
-      puts "dentro de download_asset===>#{asset.inspect}"
       unless asset['key']
         report_error(Time.now, "Could not download #{key}", asset)
         return
       end
       if asset['content']
-        # For CRLF line endings
         content = asset['content'].gsub("\r", "")
         format = "w"
       elsif asset['attachment']
         content = Base64.decode64(asset['attachment'])
         format = "w+b"
       end
-puts "criar diretorio=>#{key.inspect}"
-file = key[1..key.length]
-puts "criar file=>#{file.inspect}"
+      file = key[1..key.length]
 
       FileUtils.mkdir_p(File.dirname(file))
       File.open(file, format) {|f| f.write content} if content
     end
-   def show_during(message = '', quiet = false, &block)
+
+    def show_during(message = '', quiet = false, &block)
       print(message) unless quiet
       result = yield
       print("\r#{' ' * message.length}\r") unless quiet
