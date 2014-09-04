@@ -55,7 +55,7 @@ module OpencodeTheme
       response = OpencodeTheme.theme_new(theme_base, theme_name)
 
       if response[:success]
-        say("Create #{theme_name} theme on store [#{store}]", :green)
+        say("Create #{theme_name} theme on store", :green)
       else
         report_error(Time.now, "Could not create a new theme", response[:response])
         return
@@ -261,7 +261,7 @@ private
       unless asset['key']
         report_error(Time.now, "Could not download #{key}", asset)
         return
-      end
+      end 
       if asset['content']
         content = asset['content'].gsub("\r", "")
         format = "w"
