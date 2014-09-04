@@ -23,7 +23,7 @@ module OpencodeTheme
     end
     
     desc "configure API_KEY PASSWORD THEME_ID", "generate a config for the store"
-    def configure(api_key=nil, password=nil, theme_id=nil, env="production")
+    def configure(api_key=nil, password=nil, theme_id=nil)
       config = {:api_key => api_key, :password => password, :theme_id => theme_id, :env => env.to_sym}
       puts "config=>#{config.inspect}"
       OpencodeTheme.config = config
@@ -91,7 +91,7 @@ module OpencodeTheme
     end
 
 
-    desc "publish Theme", "turns this Theme in standard layout"
+    desc "publish", "turns this Theme in standard layout"
     def publish
       response = OpencodeTheme.publish(config[:theme_id])
       if response[:success]

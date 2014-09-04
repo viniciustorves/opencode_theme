@@ -46,3 +46,46 @@ opencode configure key , senha e loja
 ########
 
 opencode bootstrap 6b59d38039568f78d357ee347d4af6a7 c8431afbef7d1f77fca7715fea1c407c 10  takashi_theme
+
+Complicar gem: gem build opencode_theme.gemspec
+
+
+Criar um novo layout
+
+opencode bootstrap 6b59d38039568f78d357ee347d4af6a7 c8431afbef7d1f77fca7715fea1c407c 10  takashi_theme
+
+
+
+Casos de testes:
+ - novo layout
+ - configurar
+ - watch
+ - novo arquivo upload
+ - nova imagem upload
+ - download aquivo 
+
+
+
+
+
+
+APRESENTACAO ABERTURA
+
+Workflow de trabalho	Criação das APIs no aplicativo de edição para receber os arquivos do Sync	22/08/2014		Finalizado	Takashi validando os ultimos metodos. Vai publicar a gem																
+
+
+
+
+opencode bootstrap b3eb3c255e012e6c6635f12f8047b7bd a929326f1cd25f024290dac814925b99 ahs_store
+
+
+
+
+Casos de testes:
+ - novo layout
+ - configurar
+ - watch
+ - novo arquivo upload
+ - nova imagem upload
+ - download aquivo 
+ - configure errado

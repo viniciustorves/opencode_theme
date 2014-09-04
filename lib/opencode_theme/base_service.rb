@@ -41,7 +41,7 @@ module OpencodeTheme
 
   def self.get_asset(asset)
       response = opencode_theme.get(path, :query => {:key => asset}, :parser => NOOPParser)
-      asset = JSON.parse(response.body)
+      asset = response.code == 200 ? JSON.parse(response.body) : ""
       asset
   end
 
