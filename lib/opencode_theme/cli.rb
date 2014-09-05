@@ -75,6 +75,12 @@ module OpencodeTheme
       download()
     end
 
+    desc "open", "open the store in your browser"
+    def open(*keys)
+      if Launchy.open opencode_theme_url
+        say("Done.", :green)
+      end
+    end
 
     desc "download FILE", "download the store theme files"
     method_option :quiet, :type => :boolean, :default => false
@@ -90,17 +96,6 @@ module OpencodeTheme
         say("#{OpencodeTheme.api_usage} Downloaded: #{asset}", :green) unless options['quiet']
       end
       say("Done.", :green) unless options['quiet']
-    end
-
-
-    desc "publish", "turns this Theme in standard layout"
-    def publish
-      response = OpencodeTheme.publish(config[:theme_id])
-      if response[:success]
-        say("Publishing Theme [OK]", :green)
-      else
-        say("Publishing Theme [FAIL]", :red)
-      end
     end
 
     desc "upload FILE", "upload all files to your store"
@@ -144,6 +139,17 @@ module OpencodeTheme
       end
     end
 
+    desc "publish", "turns this Theme in standard layout"
+    def publish
+      response = OpencodeTheme.publish(config[:theme_id])
+      if response[:success]
+        say("Publishing Theme [OK]", :green)
+      else
+        say("Publishing Theme [FAIL]", :red)
+      end
+    end
+    
+
     desc "systeminfo", "print out system information and actively loaded libraries for aiding in submitting bug reports"
     def systeminfo
       ruby_version = "#{RUBY_VERSION}"
@@ -153,13 +159,6 @@ module OpencodeTheme
       %w(Listen HTTParty Launchy).each do |lib|
         require "#{lib.downcase}/version"
         puts "#{lib}: v" +  Kernel.const_get("#{lib}::VERSION")
-      end
-    end
-
-    desc "open", "open the store in your browser"
-    def open(*keys)
-      if Launchy.open opencode_theme_url
-        say("Done.", :green)
       end
     end
 

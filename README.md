@@ -74,7 +74,7 @@ APRESENTACAO ABERTURA
 Workflow de trabalho	Criação das APIs no aplicativo de edição para receber os arquivos do Sync	22/08/2014		Finalizado	Takashi validando os ultimos metodos. Vai publicar a gem																
 
 
-
+cd
 
 opencode bootstrap b3eb3c255e012e6c6635f12f8047b7bd a929326f1cd25f024290dac814925b99 ahs_store
 
@@ -89,3 +89,9 @@ Casos de testes:
  - nova imagem upload
  - download aquivo 
  - configure errado
+
+
+:api_key: 03291973d38ae05e5296f7514b3b3a3b
+:password: 2c1befd1c9c75039197dc207e5274ba9
+
+
