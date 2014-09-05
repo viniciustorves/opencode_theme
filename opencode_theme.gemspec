@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = OpencodeTheme::VERSION
   spec.authors       = ["Rafael Takashi Tanaka"]
   spec.email         = ["rtanaka@tray.net.br"]
-  spec.description   = %q{Command Line tool for developing themes in Tray e-commerce}
+  spec.description   = %q{Command Line tool for developing themes in Tray E-commerce}
   spec.summary       = %q{Provides simple commands to upload and donwload files from a themes}
-  spec.homepage      = "http://www.tray.com.br"
+  spec.homepage      = "https://github.com/tray-tecnologia/theme-template/wiki"
   spec.license       = "MIT"
 
   spec.add_dependency('thor', '>= 0.14.4')
