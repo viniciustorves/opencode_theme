@@ -9,6 +9,9 @@ require 'filewatcher'
 require 'launchy'
 require 'mimemagic'
 
+MimeMagic.add('application/json', extensions: %w(json), parents: 'text/plain')
+MimeMagic.add('application/vnd.ms-fontobject', extensions: %w(eot), parents: 'font/opentype')
+
 
 module OpencodeTheme
   class Cli < Thor
@@ -24,8 +27,7 @@ module OpencodeTheme
     
     desc "configure API_KEY PASSWORD THEME_ID", "generate a config for the store"
     def configure(api_key=nil, password=nil, theme_id=nil)
-      config = {:api_key => api_key, :password => password, :theme_id => theme_id, :env => env.to_sym}
-      puts "config=>#{config.inspect}"
+      config = {:api_key => api_key, :password => password, :theme_id => theme_id}
       OpencodeTheme.config = config
       response = OpencodeTheme.check_config
       if response[:success]
@@ -106,15 +108,9 @@ module OpencodeTheme
     def upload(*keys)
       assets = keys.empty? ? local_assets_list : keys
       assets.each do |asset|
-        send_asset("/#{asset}", options['quiet'])
+        send_asset("#{asset}", options['quiet'])
       end
       say("Done.", :green) unless options['quiet']
-    end
-
-    desc "replace FILE", "completely replace theme files with local theme"
-    method_option :quiet, :type => :boolean, :default => false
-    def replace(*keys)
-      #To DO
     end
 
     desc "remove FILE", "remove theme file"
@@ -131,12 +127,11 @@ module OpencodeTheme
     method_option :keep_files, :type => :boolean, :default => false
     def watch
       watcher do |filename, event|
-        file_list = filename.gsub("/#{Dir.pwd}/", '')
-        unless local_assets_list.include?(file_list)
-          say("Unknown file [#{file_list}]", :red)
+        filename = filename.gsub("#{Dir.pwd}/", '')
+        unless local_assets_list.include?(filename)
+          say("Unknown file [#{filename}]", :red)
           next 
         end
-        filename = "/#{file_list}"
         action = if [:changed, :new].include?(event)
           :send_asset
         elsif event == :delete
@@ -193,10 +188,10 @@ private
 
     def send_asset(asset, quiet=false)
       return unless valid?(asset)
-      data = {:key => "#{asset}"}
-      content = File.read("#{Dir.pwd}#{asset}")
+      data = {:key => "/#{asset}"}
+      content = File.read("#{asset}")
       if binary_file?(asset) || OpencodeTheme.is_binary_data?(content)
-        content = File.open("#{Dir.pwd}#{asset}", "rb") { |io| io.read }
+        content = File.open("#{asset}", "rb") { |io| io.read }
         data.merge!(:attachment => Base64.encode64(content))
       else
         data.merge!(:value => content)
@@ -225,7 +220,7 @@ private
     
     def watcher
       FileWatcher.new(Dir.pwd).watch() do |filename, event|
-        yield("/#{filename}", event)
+        yield("#{filename}", event)
       end
     end
 
@@ -244,7 +239,7 @@ private
 
     def valid?(key)
       return true
-      #  return true if DEFAULT_WHITELIST.include?(key.split('/').first + "/")
+      #return true if DEFAULT_WHITELIST.include?(key.split('/').first + "/")
       # say("'#{key}' is not in a valid file for theme uploads", :yellow)
       # say("Files need to be in one of the following subdirectories: #{DEFAULT_WHITELIST.join(' ')}", :yellow)
       # false
@@ -269,10 +264,8 @@ private
         content = Base64.decode64(asset['attachment'])
         format = "w+b"
       end
-      file = key[1..key.length]
-
-      FileUtils.mkdir_p(File.dirname(file))
-      File.open(file, format) {|f| f.write content} if content
+      FileUtils.mkdir_p(File.dirname(key))
+      File.open(key, format) {|f| f.write content} if content
     end
 
     def show_during(message = '', quiet = false, &block)

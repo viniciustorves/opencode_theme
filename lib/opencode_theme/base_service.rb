@@ -5,7 +5,6 @@ module OpencodeTheme
   @@current_api_call_count = 0
   @@total_api_calls = 40
   URL_API = "https://opencode-alog2.tray.com.br"
-  #URL_API = "http://isilva.appthemes.ruby.dev.tray.intranet"
 
   def self.api_usage
     "[API Limit: #{@@current_api_call_count || "??"}/#{@@total_api_calls || "??"}]"
@@ -35,12 +34,12 @@ module OpencodeTheme
 
   def self.asset_list
     response = opencode_theme.get(path, :parser => NOOPParser)
-    assets = response.code == 200 ? JSON.parse(response.body)["assets"].collect {|a| a['key'] } : {}
+    assets = response.code == 200 ? JSON.parse(response.body)["assets"].collect {|a| a['key'][1..a['key'].length] } : {}
     assets
   end
 
   def self.get_asset(asset)
-      response = opencode_theme.get(path, :query => {:key => asset}, :parser => NOOPParser)
+      response = opencode_theme.get(path, :query => {:key => "/#{asset}"}, :parser => NOOPParser)
       asset = response.code == 200 ? JSON.parse(response.body) : ""
       asset
   end
@@ -51,7 +50,7 @@ module OpencodeTheme
   end
 
   def self.delete_asset(asset)
-    response = opencode_theme.delete(path, :body => {:key => asset})
+    response = opencode_theme.delete(path, :body => {:key => "/#{asset}"})
     response
   end
 
