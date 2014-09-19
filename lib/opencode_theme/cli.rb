@@ -10,6 +10,7 @@ require 'launchy'
 require 'mimemagic'
 
 MimeMagic.add('application/json', extensions: %w(json), parents: 'text/plain')
+MimeMagic.add('application/x-pointplus', extensions: %w(scss), parents: 'text/css')
 MimeMagic.add('application/vnd.ms-fontobject', extensions: %w(eot), parents: 'font/opentype')
 
 
