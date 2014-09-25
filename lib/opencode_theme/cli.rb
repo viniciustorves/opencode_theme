@@ -19,7 +19,7 @@ module OpencodeTheme
     include Thor::Actions
 
     IGNORE = %w(config.yml)
-    DEFAULT_WHITELIST = %w(configs/ css/ elements/ img/ layouts/ pages/)
+    DEFAULT_WHITELIST = %w(configs/ css/ elements/ img/ layouts/ pages/ js/)
     TIMEFORMAT = "%H:%M:%S"
 
     tasks.keys.abbrev.each do |shortcut, command|
