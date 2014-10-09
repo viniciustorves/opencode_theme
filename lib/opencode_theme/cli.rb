@@ -26,7 +26,7 @@ module OpencodeTheme
       map shortcut => command.to_sym
     end
     
-    desc "configure API_KEY PASSWORD THEME_ID", "generate a config for the store"
+    desc "configure API_KEY PASSWORD THEME_ID", "Configura o tema que será modificado"
     def configure(api_key=nil, password=nil, theme_id=nil)
       config = {:api_key => api_key, :password => password, :theme_id => theme_id}
       OpencodeTheme.config = config
@@ -41,7 +41,7 @@ module OpencodeTheme
     end
 
 
-    desc "bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE", "bootstrap com o tema Padrao e configuracao local do diretorio. Include master if you'd like to use the latest build for the theme"
+    desc "bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE", "Cria um novo tema com o nome informado"
     method_option :master, :type => :boolean, :default => false
     def bootstrap(api_key=nil, password=nil, theme_name='default', theme_base='default')
       OpencodeTheme.config = {:api_key => api_key, :password => password}
@@ -76,14 +76,14 @@ module OpencodeTheme
       download()
     end
 
-    desc "open", "open the store in your browser"
+    desc "open", "Abre a loja no navegador"
     def open(*keys)
       if Launchy.open opencode_theme_url
         say("Done.", :green)
       end
     end
 
-    desc "download FILE", "download the store theme files"
+    desc "download FILE", "Baixa o arquivo informado ou todos se FILE for omitido"
     method_option :quiet, :type => :boolean, :default => false
     method_option :exclude
     def download(*keys)
@@ -99,7 +99,7 @@ module OpencodeTheme
       say("Done.", :green) unless options['quiet']
     end
 
-    desc "upload FILE", "upload all files to your store"
+    desc "upload FILE", "Sobe o arquivo informado ou todos se FILE for omitido"
     method_option :quiet, :type => :boolean, :default => false
     def upload(*keys)
       assets = keys.empty? ? local_assets_list : keys
@@ -109,7 +109,7 @@ module OpencodeTheme
       say("Done.", :green) unless options['quiet']
     end
 
-    desc "remove FILE", "remove theme file"
+    desc "remove FILE", "Remove um arquivo do tema (apenas se o tema não estiver publicado)"
     method_option :quiet, :type => :boolean, :default => false
     def remove(*keys)
       keys.each do |key|
@@ -118,7 +118,7 @@ module OpencodeTheme
       say("Done.", :green) unless options['quiet']
     end
 
-    desc "watch", "upload and delete individual theme files"
+    desc "watch", "Baixa e sobe um arquivo sempre que ele for salvo"
     method_option :quiet, :type => :boolean, :default => false
     method_option :keep_files, :type => :boolean, :default => false
     def watch
@@ -140,7 +140,7 @@ module OpencodeTheme
       end
     end
 
-    desc "publish", "turns this Theme in standard layout"
+    desc "publish", "Publica um tema"
     def publish
       response = OpencodeTheme.publish(config[:theme_id])
       if response[:success]
@@ -151,7 +151,7 @@ module OpencodeTheme
     end
     
 
-    desc "systeminfo", "print out system information and actively loaded libraries for aiding in submitting bug reports"
+    desc "systeminfo", "Mostra informações do sistema"
     def systeminfo
       ruby_version = "#{RUBY_VERSION}"
       ruby_version += "-p#{RUBY_PATCHLEVEL}" if RUBY_PATCHLEVEL
