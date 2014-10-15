@@ -26,7 +26,7 @@ module OpencodeTheme
       map shortcut => command.to_sym
     end
     
-    desc "configure API_KEY PASSWORD THEME_ID", "Configura o tema que será modificado"
+    desc "configure API_KEY PASSWORD THEME_ID", "Configura o tema que sera modificado"
     def configure(api_key=nil, password=nil, theme_id=nil)
       config = {:api_key => api_key, :password => password, :theme_id => theme_id}
       OpencodeTheme.config = config
@@ -109,7 +109,7 @@ module OpencodeTheme
       say("Done.", :green) unless options['quiet']
     end
 
-    desc "remove FILE", "Remove um arquivo do tema (apenas se o tema não estiver publicado)"
+    desc "remove FILE", "Remove um arquivo do tema (apenas se o tema nao estiver publicado)"
     method_option :quiet, :type => :boolean, :default => false
     def remove(*keys)
       keys.each do |key|
@@ -151,7 +151,7 @@ module OpencodeTheme
     end
     
 
-    desc "systeminfo", "Mostra informações do sistema"
+    desc "systeminfo", "Mostra informacoes do sistema"
     def systeminfo
       ruby_version = "#{RUBY_VERSION}"
       ruby_version += "-p#{RUBY_PATCHLEVEL}" if RUBY_PATCHLEVEL
