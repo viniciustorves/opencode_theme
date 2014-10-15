@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'thor'
 require 'yaml'
 YAML::ENGINE.yamler = 'syck' if defined? Syck
