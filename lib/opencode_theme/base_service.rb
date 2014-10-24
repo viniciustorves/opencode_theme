@@ -4,7 +4,7 @@ module OpencodeTheme
   include HTTParty
   @@current_api_call_count = 0
   @@total_api_calls = 40
-  URL_API = "http://opencode.tray.com.br"
+  URL_API = "https://opencode.tray.com.br"
 
   def self.api_usage
     "[API Limit: #{@@current_api_call_count || "??"}/#{@@total_api_calls || "??"}]"
