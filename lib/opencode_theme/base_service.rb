@@ -2,6 +2,7 @@ require 'httparty'
 
 module OpencodeTheme
   include HTTParty
+  default_options.update(verify: false)
   @@current_api_call_count = 0
   @@total_api_calls = 40
   URL_API = "https://opencode.tray.com.br"
