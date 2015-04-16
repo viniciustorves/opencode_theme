@@ -15,6 +15,16 @@ module OpencodeTheme
     response = opencode_theme.post("/api/check", :query => {:theme_id => config[:theme_id] })
     return {success: response.success?, response: JSON.parse(response.body)}
   end
+  
+  def self.list
+    response = opencode_theme.get("/api/list")
+    return {success: response.success?, response: JSON.parse(response.body)}
+  end
+
+ def self.clean
+   response = opencode_theme.post("/api/clean_cache", :query => {:theme_id => config[:theme_id] })
+   return {success: response.success?, response: JSON.parse(response.body)}
+ end  
 
   def self.publish(theme_id)
     response = opencode_theme.post("/api/themes/publish", :body => {:theme_id => theme_id} , :parser => NOOPParser)
