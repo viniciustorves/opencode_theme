@@ -41,6 +41,33 @@ module OpencodeTheme
       end
     end
 
+    desc "list API_KEY PASSWORD", "list todos os temas da loja"
+    def list(api_key=nil, password=nil)
+      config = {:api_key => api_key, :password => password}
+        response = OpencodeTheme.list
+      if response[:success]
+       response[:response]["themes"].each do |theme|
+          if theme["published"].empty?
+            say("nome: #{theme['name']}  (#{theme['id']}) \n publicado: 0 \n\n",  :red)
+          else   
+            say("nome: #{theme['name']}  (#{theme['id']}) \n publicado: 1 \n\n",  :green)
+          end 
+        end
+      else
+          report_error(Time.now, "Could not list now")
+      end
+  end
+  
+    desc "clean API_KEY PASSWORD", "apaga cache da loja"
+    def clean(api_key=nil, password=nil)
+      config = {:api_key => api_key, :password => password}
+      response = OpencodeTheme.clean
+        if response[:success]
+          say("sucesso!\n\n",  :green)
+        else   
+          say("falha",  :red)
+        end 
+      end
 
     desc "bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE", "Cria um novo tema com o nome informado"
     method_option :master, :type => :boolean, :default => false
