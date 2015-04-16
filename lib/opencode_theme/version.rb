@@ -1,3 +1,3 @@
 module OpencodeTheme
-  VERSION = "0.0.1b"
+  VERSION = "0.0.2"
 end
