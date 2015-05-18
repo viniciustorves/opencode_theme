@@ -9,6 +9,7 @@ require 'json'
 require 'filewatcher'
 require 'launchy'
 require 'mimemagic'
+require 'pry'
 
 MimeMagic.add('application/json', extensions: %w(json js), parents: 'text/plain')
 MimeMagic.add('application/x-pointplus', extensions: %w(scss), parents: 'text/css')
@@ -280,7 +281,7 @@ private
     def download_asset(key)
       return unless valid?(key)
       notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
-      asset = OpencodeTheme.get_asset(key)
+      asset = OpencodeTheme.get_asset(URI.encode(key))
       unless asset['key']
         report_error(Time.now, "Could not download #{key}", asset)
         return
@@ -292,7 +293,7 @@ private
         content = Base64.decode64(asset['attachment'])
         format = "w+b"
       end
-      FileUtils.mkdir_p(File.dirname(key))
+      FileUtils.mkdir_p(File.dirname(URI.decode(key)))
       File.open(key, format) {|f| f.write content} if content
     end
 
