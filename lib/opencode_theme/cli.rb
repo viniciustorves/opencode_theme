@@ -9,7 +9,6 @@ require 'json'
 require 'filewatcher'
 require 'launchy'
 require 'mimemagic'
-
 MimeMagic.add('application/json', extensions: %w(json js), parents: 'text/plain')
 MimeMagic.add('application/x-pointplus', extensions: %w(scss), parents: 'text/css')
 MimeMagic.add('application/vnd.ms-fontobject', extensions: %w(eot), parents: 'font/opentype')
@@ -121,6 +120,7 @@ module OpencodeTheme
       end
 
       assets.each do |asset|
+      asset = URI.decode(asset)       
         download_asset(asset)
         say("#{OpencodeTheme.api_usage} Downloaded: #{asset}", :green) unless options['quiet']
       end
