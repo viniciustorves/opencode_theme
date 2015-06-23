@@ -278,6 +278,7 @@ private
     end
 
     def download_asset(key)
+
       return unless valid?(key)
       notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
       asset = OpencodeTheme.get_asset(URI.encode(key))
@@ -286,8 +287,9 @@ private
         return
       end
       if asset['content']
-        content = asset['content'].gsub("\r", "")
-        format = "w"
+       content = Base64.decode64(asset['content'])
+       content = content.force_encoding("UTF-8")
+        format = "w+b:ISO-8859-1"
       elsif asset['attachment']
         content = Base64.decode64(asset['attachment'])
         format = "w+b"
