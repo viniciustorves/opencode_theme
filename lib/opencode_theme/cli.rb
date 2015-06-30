@@ -9,6 +9,7 @@ require 'json'
 require 'filewatcher'
 require 'launchy'
 require 'mimemagic'
+require 'pry'
 MimeMagic.add('application/json', extensions: %w(json js), parents: 'text/plain')
 MimeMagic.add('application/x-pointplus', extensions: %w(scss), parents: 'text/css')
 MimeMagic.add('application/vnd.ms-fontobject', extensions: %w(eot), parents: 'font/opentype')
@@ -152,6 +153,7 @@ module OpencodeTheme
     def watch
       watcher do |filename, event|
         filename = filename.gsub("#{Dir.pwd}/", '')
+      #  p file
         unless local_assets_list.include?(filename)
           say("Unknown file [#{filename}]", :red)
           next
@@ -215,22 +217,24 @@ private
 
 
     def send_asset(asset, quiet = false)
-      return unless valid?(asset)
-      data = { key: "/#{asset}" }
-      content = File.read("#{asset}")
-      if binary_file?(asset) || OpencodeTheme.is_binary_data?(content)
-        content = File.open("#{asset}", "rb") { |io| io.read }
-        data.merge!(attachment: Base64.encode64(content))
-      else
-        data.merge!(value: Base64.encode64(content))
-      end
-      response = show_during("[#{timestamp}] Uploading: #{asset}", quiet) do
-        OpencodeTheme.send_asset(data)
-      end
-      if response.success?
-        say("[#{timestamp}] Uploaded: #{asset}", :green) unless quiet
-      else
-        report_error(Time.now, "Could not upload #{asset}", response)
+      if valid_name?(asset)
+        return unless valid?(asset)
+        data = { key: "/#{asset}" }
+        content = File.read("#{asset}")
+        if binary_file?(asset) || OpencodeTheme.is_binary_data?(content)
+          content = File.open("#{asset}", "rb") { |io| io.read }
+          data.merge!(attachment: Base64.encode64(content))
+        else
+          data.merge!(value: Base64.encode64(content))
+        end
+        response = show_during("[#{timestamp}] Uploading: #{asset}", quiet) do
+          OpencodeTheme.send_asset(data)
+        end
+        if response.success?
+          say("[#{timestamp}] Uploaded: #{asset}", :green) unless quiet
+        else
+          report_error(Time.now, "Could not upload #{asset}", response)
+        end
       end
     end
 
@@ -277,25 +281,38 @@ private
       time.strftime(TIMEFORMAT)
     end
 
-    def download_asset(key)
+     def valid_name?(key)
+      name = key.split("/").last
+      if name =~ /^[0-9a-zA-Z\-_.]+\.(jpg|gif|png|json|PNG|GIF|JPG|JSON)$/
+        valid =  true
+      else
+         report_error(Time.now, "INVALID NAME #{name}", key)
+      end
+      valid      
+    end
 
-      return unless valid?(key)
-      notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
-      asset = OpencodeTheme.get_asset(URI.encode(key))
-      unless asset['key']
-        report_error(Time.now, "Could not download #{key}", asset)
-        return
-      end
-      if asset['content']
-       content = Base64.decode64(asset['content'])
-       content = content.force_encoding("UTF-8")
-        format = "w+b:ISO-8859-1"
-      elsif asset['attachment']
-        content = Base64.decode64(asset['attachment'])
-        format = "w+b"
-      end
-      FileUtils.mkdir_p(File.dirname(URI.decode(key)))
-      File.open(key, format) {|f| f.write content} if content
+    def download_asset(key)
+      if valid_name?(key)
+        return unless valid?(key)
+        notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
+        asset = OpencodeTheme.get_asset(URI.encode(key))
+        unless asset['key']
+          report_error(Time.now, "Could not download #{key}", asset)
+          return
+        end
+        if asset['content']
+         content = Base64.decode64(asset['content'])
+         content = content.force_encoding("UTF-8")
+          format = "w+b:ISO-8859-1"
+        elsif asset['attachment']
+          content = Base64.decode64(asset['attachment'])
+          format = "w+b"
+        end
+        FileUtils.mkdir_p(File.dirname(URI.decode(key)))
+        File.open(key, format) {|f| f.write content} if content
+      else
+         report_error(Time.now, "Name INVALID #{key}", asset)
+       end
     end
 
     def show_during(message = '', quiet = false, &block)
@@ -311,4 +328,5 @@ private
     end
 
   end
+
 end
