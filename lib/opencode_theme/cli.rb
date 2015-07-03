@@ -153,7 +153,6 @@ module OpencodeTheme
     def watch
       watcher do |filename, event|
         filename = filename.gsub("#{Dir.pwd}/", '')
-      #  p file
         unless local_assets_list.include?(filename)
           say("Unknown file [#{filename}]", :red)
           next
@@ -165,7 +164,6 @@ module OpencodeTheme
         else
           raise NotImplementedError, "Unknown event -- #{event} -- #{filename}"
         end
-
         send(action, filename, options['quiet'])
       end
     end
@@ -283,7 +281,7 @@ private
 
      def valid_name?(key)
       name = key.split("/").last
-      if name =~ /^[0-9a-zA-Z\-_.]+\.(jpg|gif|png|json|PNG|GIF|JPG|JSON)$/
+      if name =~ /^[0-9a-zA-Z\-_.]+\.(ttf|eot|svg|woff|css|scss|html|js|jpg|gif|png|json|TTF|EOT|SVG|WOFF|CSS|SCSS|HTML|JS|PNG|GIF|JPG|JSON)$/
         valid =  true
       else
          report_error(Time.now, "INVALID NAME #{name}", key)
@@ -310,9 +308,7 @@ private
         end
         FileUtils.mkdir_p(File.dirname(URI.decode(key)))
         File.open(key, format) {|f| f.write content} if content
-      else
-         report_error(Time.now, "Name INVALID #{key}", asset)
-       end
+      end
     end
 
     def show_during(message = '', quiet = false, &block)
