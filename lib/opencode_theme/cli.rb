@@ -9,7 +9,6 @@ require 'json'
 require 'filewatcher'
 require 'launchy'
 require 'mimemagic'
-require 'pry'
 MimeMagic.add('application/json', extensions: %w(json js), parents: 'text/plain')
 MimeMagic.add('application/x-pointplus', extensions: %w(scss), parents: 'text/css')
 MimeMagic.add('application/vnd.ms-fontobject', extensions: %w(eot), parents: 'font/opentype')
