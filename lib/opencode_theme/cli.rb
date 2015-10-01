@@ -176,7 +176,7 @@ module OpencodeTheme
       ruby_version += "-p#{RUBY_PATCHLEVEL}" if RUBY_PATCHLEVEL
       puts "Ruby: v#{ruby_version}"
       puts "Operating System: #{RUBY_PLATFORM}"
-      %w(Listen HTTParty Launchy).each do |lib|
+      %w(HTTParty Launchy).each do |lib|
         require "#{lib.downcase}/version"
         puts "#{lib}: v" +  Kernel.const_get("#{lib}::VERSION")
       end
