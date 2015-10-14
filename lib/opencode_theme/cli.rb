@@ -9,13 +9,14 @@ require 'json'
 require 'filewatcher'
 require 'launchy'
 require 'mimemagic'
+require 'pry'
 MimeMagic.add('application/json', extensions: %w(json js), parents: 'text/plain')
 MimeMagic.add('application/x-pointplus', extensions: %w(scss), parents: 'text/css')
 MimeMagic.add('application/vnd.ms-fontobject', extensions: %w(eot), parents: 'font/opentype')
 
 module OpencodeTheme
   class Cli < Thor
-    include Thor::Actions
+  #  include Thor::Actions
 
     IGNORE = %w(config.yml)
     DEFAULT_WHITELIST = %w(configs/ css/ elements/ img/ layouts/ pages/ js/)
@@ -24,6 +25,9 @@ module OpencodeTheme
     tasks.keys.abbrev.each do |shortcut, command|
       map shortcut => command.to_sym
     end
+
+    map 'new' => :configure
+    map 'rm' => :remove
 
     desc 'configure API_KEY PASSWORD THEME_ID', 'Configura o tema que sera modificado'
     def configure(api_key = nil, password = nil, theme_id = nil)
@@ -60,13 +64,14 @@ module OpencodeTheme
     end
 
     desc 'clean', 'Limpa o cache de arquivos estáticos'
+
     def clean
       config = OpencodeTheme.config
       response = OpencodeTheme.clean
         if response[:success]
-          say('Clean cache [OK]\n',  :green)
+          say('Clean cache [OK]\n', :green)
         else
-          say('Clean cache [FAIL]',  :red)
+          say('Clean cache [FAIL]', :red)
         end
       end
 
