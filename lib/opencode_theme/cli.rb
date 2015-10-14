@@ -13,75 +13,74 @@ MimeMagic.add('application/json', extensions: %w(json js), parents: 'text/plain'
 MimeMagic.add('application/x-pointplus', extensions: %w(scss), parents: 'text/css')
 MimeMagic.add('application/vnd.ms-fontobject', extensions: %w(eot), parents: 'font/opentype')
 
-
 module OpencodeTheme
   class Cli < Thor
     include Thor::Actions
 
     IGNORE = %w(config.yml)
     DEFAULT_WHITELIST = %w(configs/ css/ elements/ img/ layouts/ pages/ js/)
-    TIMEFORMAT = "%H:%M:%S"
+    TIMEFORMAT = '%H:%M:%S'
 
     tasks.keys.abbrev.each do |shortcut, command|
       map shortcut => command.to_sym
     end
 
-    desc "configure API_KEY PASSWORD THEME_ID", "Configura o tema que sera modificado"
-    def configure(api_key=nil, password=nil, theme_id=nil)
-      config = {:api_key => api_key, :password => password, :theme_id => theme_id}
+    desc 'configure API_KEY PASSWORD THEME_ID', 'Configura o tema que sera modificado'
+    def configure(api_key = nil, password = nil, theme_id = nil)
+      config = { api_key: api_key, password: password, theme_id: theme_id }
       OpencodeTheme.config = config
       response = OpencodeTheme.check_config
       if response[:success]
-        config.merge!(:preview_url => response[:response]['preview'])
-        create_file('config.yml', config.to_yaml, :force => true)
-        say("Configuration [OK]", :green)
+        config.merge!(preview_url: response[:response]['preview'])
+        create_file('config.yml', config.to_yaml, force: true)
+        say('Configuration [OK]', :green)
       else
-        say("Configuration [FAIL]", :red)
+        say('Configuration [FAIL]', :red)
       end
     end
 
-    desc "list", "Lista todos os temas da loja"
+    desc 'list', 'Lista todos os temas da loja'
     def list
       config = OpencodeTheme.config
       response = OpencodeTheme.list
       if response[:success]
         say("\n")
-        response[:response]["themes"].each do |theme|
-          color = theme['published'] == "1" ? :green : :red
-          say("Theme name:   ", color)
+        response[:response]['themes'].each do |theme|
+          color = theme['published'] == '1' ? :green : :red
+          say('Theme name:   ', color)
           say("#{theme['name']}\n", color)
-          say("Theme ID:     ", color)
+          say('Theme ID:     ', color)
           say("#{theme['id']}\n", color)
-          say("Theme status: ", color)
+          say('Theme status: ', color)
           say("#{(theme['published'])}\n\n", color)
         end
       else
-        report_error(Time.now, "Could not list now", response[:response])
+        report_error(Time.now, 'Could not list now', response[:response])
       end
     end
 
-    desc "clean", "Limpa o cache de arquivos estáticos"
+    desc 'clean', 'Limpa o cache de arquivos estáticos'
     def clean
       config = OpencodeTheme.config
       response = OpencodeTheme.clean
         if response[:success]
-          say("Clean cache [OK]\n",  :green)
+          say('Clean cache [OK]\n',  :green)
         else
-          say("Clean cache [FAIL]",  :red)
+          say('Clean cache [FAIL]',  :red)
         end
       end
 
-    desc "bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE", "Cria um novo tema com o nome informado"
-    method_option :master, :type => :boolean, :default => false
-    def bootstrap(api_key=nil, password=nil, theme_name='default', theme_base='default')
-      OpencodeTheme.config = {:api_key => api_key, :password => password}
+    desc 'bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE', 'Cria um novo tema com o nome informado'
+    method_option :master, type: :boolean, default: false
+    def bootstrap(api_key = nil, password = nil, theme_name = 'default', theme_base = 'default')
+      OpencodeTheme.config = { api_key: api_key, password: password }
 
       check_config = OpencodeTheme.check_config
 
       if check_config[:success]
-        say("Configuration [OK]", :green)
+        say('Configuration [OK]', :green)
       else
-        report_error(Time.now, "Configuration [FAIL]", check_config[:response])
+        report_error(Time.now, 'Configuration [FAIL]', check_config[:response])
         return
       end
 
@@ -90,7 +89,7 @@ module OpencodeTheme
       if response[:success]
         say("Create #{theme_name} theme on store", :green)
       else
-        report_error(Time.now, "Could not create a new theme", response[:response])
+        report_error(Time.now, 'Could not create a new theme', response[:response])
         return
       end
 
@@ -103,18 +102,18 @@ module OpencodeTheme
 
       say("Downloading #{theme_name} assets from Opencode")
       Dir.chdir(theme_name)
-      download()
+      download
     end
 
-    desc "open", "Abre a loja no navegador"
+    desc 'open', 'Abre a loja no navegador'
     def open(*keys)
       if Launchy.open opencode_theme_url
-        say("Done.", :green)
+        say('Done.', :green)
       end
     end
 
-    desc "download FILE", "Baixa o arquivo informado ou todos se FILE for omitido"
-    method_option :quiet, :type => :boolean, :default => false
+    desc 'download FILE', 'Baixa o arquivo informado ou todos se FILE for omitido'
+    method_option :quiet, type: :boolean, default: false
     method_option :exclude
     def download(*keys)
       assets = keys.empty? ? OpencodeTheme.asset_list : keys
@@ -123,35 +122,35 @@ module OpencodeTheme
       end
 
       assets.each do |asset|
-      asset = URI.decode(asset)
+        asset = URI.decode(asset)
         download_asset(asset)
         say("#{OpencodeTheme.api_usage} Downloaded: #{asset}", :green) unless options['quiet']
       end
-      say("Done.", :green) unless options['quiet']
+      say('Done.', :green) unless options['quiet']
     end
 
-    desc "upload FILE", "Sobe o arquivo informado ou todos se FILE for omitido"
-    method_option :quiet, :type => :boolean, :default => false
+    desc 'upload FILE', 'Sobe o arquivo informado ou todos se FILE for omitido'
+    method_option :quiet, type: :boolean, default: false
     def upload(*keys)
       assets = keys.empty? ? local_assets_list : keys
       assets.each do |asset|
         send_asset("#{asset}", options['quiet'])
       end
-      say("Done.", :green) unless options['quiet']
+      say('Done.', :green) unless options['quiet']
     end
 
-    desc "remove FILE", "Remove um arquivo do tema (apenas se o tema nao estiver publicado)"
-    method_option :quiet, :type => :boolean, :default => false
+    desc 'remove FILE', 'Remove um arquivo do tema (apenas se o tema nao estiver publicado)'
+    method_option :quiet, type: :boolean, default: false
     def remove(*keys)
       keys.each do |key|
         delete_asset(key, options['quiet'])
       end
-      say("Done.", :green) unless options['quiet']
+      say('Done.', :green) unless options['quiet']
     end
 
-    desc "watch", "Baixa e sobe um arquivo sempre que ele for salvo"
-    method_option :quiet, :type => :boolean, :default => false
-    method_option :keep_files, :type => :boolean, :default => false
+    desc 'watch', 'Baixa e sobe um arquivo sempre que ele for salvo'
+    method_option :quiet, type: :boolean, default: false
+    method_option :keep_files, type: :boolean, default: false
     def watch
       watcher do |filename, event|
         filename = filename.gsub("#{Dir.pwd}/", '')
@@ -160,7 +159,7 @@ module OpencodeTheme
           next
         end
         action = if [:changed, :new].include?(event)
-          :send_asset
+                    :send_asset
         elsif event == :delete
           :delete_asset
         else
@@ -170,7 +169,7 @@ module OpencodeTheme
       end
     end
 
-    desc "systeminfo", "Mostra informacoes do sistema"
+    desc 'systeminfo', 'Mostra informacoes do sistema'
     def systeminfo
       ruby_version = "#{RUBY_VERSION}"
       ruby_version += "-p#{RUBY_PATCHLEVEL}" if RUBY_PATCHLEVEL
@@ -178,18 +177,17 @@ module OpencodeTheme
       puts "Operating System: #{RUBY_PLATFORM}"
       %w(HTTParty Launchy).each do |lib|
         require "#{lib.downcase}/version"
-        puts "#{lib}: v" +  Kernel.const_get("#{lib}::VERSION")
+        puts "#{lib}: v" + Kernel.const_get("#{lib}::VERSION")
       end
     end
 
-
-protected
+    protected
 
     def config
       @config ||= YAML.load_file 'config.yml'
     end
 
-private
+    private
 
     def notify_and_sleep(message)
       say(message, :red)
@@ -197,13 +195,12 @@ private
     end
 
     def binary_file?(path)
-     !MimeMagic.by_path(path).text?
+      !MimeMagic.by_path(path).text?
     end
 
     def opencode_theme_url
       config[:preview_url]
     end
-
 
     def send_asset(asset, quiet = false)
       if valid_name?(asset)
@@ -227,7 +224,7 @@ private
       end
     end
 
-    def delete_asset(key, quiet=false)
+    def delete_asset(key, quiet = false)
       return unless valid?(key)
       response = show_during("[#{timestamp}] Removing: #{key}", quiet) do
         OpencodeTheme.delete_asset(key)
@@ -240,7 +237,7 @@ private
     end
 
     def watcher
-      FileWatcher.new(Dir.pwd).watch() do |filename, event|
+      FileWatcher.new(Dir.pwd).watch do |filename, event|
         yield("#{filename}", event)
       end
     end
@@ -270,12 +267,12 @@ private
       time.strftime(TIMEFORMAT)
     end
 
-     def valid_name?(key)
-      name = key.split("/").last
+    def valid_name?(key)
+      name = key.split('/').last
       if name =~ /^[0-9a-zA-Z\-_.]+\.(ttf|eot|svg|woff|css|scss|html|js|jpg|gif|png|json|TTF|EOT|SVG|WOFF|CSS|SCSS|HTML|JS|PNG|GIF|JPG|JSON)$/
         valid =  true
       else
-         report_error(Time.now, "INVALID NAME #{name}", key)
+        report_error(Time.now, "INVALID NAME #{name}", key)
       end
       valid
     end
@@ -283,22 +280,22 @@ private
     def download_asset(key)
       if valid_name?(key)
         return unless valid?(key)
-        notify_and_sleep("Approaching limit of API permits. Naptime until more permits become available!") if OpencodeTheme.needs_sleep?
+        notify_and_sleep('Approaching limit of API permits. Naptime until more permits become available!') if OpencodeTheme.needs_sleep?
         asset = OpencodeTheme.get_asset(URI.encode(key))
         unless asset['key']
           report_error(Time.now, "Could not download #{key}", asset)
           return
         end
         if asset['content']
-         content = Base64.decode64(asset['content'])
-         content = content.force_encoding("UTF-8")
-          format = "w+b:ISO-8859-1"
+          content = Base64.decode64(asset['content'])
+          content = content.force_encoding('UTF-8')
+          format = 'w+b:ISO-8859-1'
         elsif asset['attachment']
           content = Base64.decode64(asset['attachment'])
-          format = "w+b"
+          format = 'w+b'
         end
         FileUtils.mkdir_p(File.dirname(URI.decode(key)))
-        File.open(key, format) {|f| f.write content} if content
+        File.open(key, format) { |f| f.write content } if content
       end
     end
 
@@ -313,7 +310,5 @@ private
       say("[#{timestamp(time)}] Error: #{message}", :red)
       say("Error Details: #{response}", :yellow)
     end
-
   end
-
 end
