@@ -26,7 +26,7 @@ module OpencodeTheme
       map shortcut => command.to_sym
     end
 
-    map 'new' => :configure
+    map 'new' => :bootstrap
     map 'rm' => :remove
 
     desc 'configure API_KEY PASSWORD THEME_ID', 'Configura o tema que sera modificado'
