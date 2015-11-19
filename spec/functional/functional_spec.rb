@@ -7,6 +7,12 @@ describe OpencodeTheme::Cli, :functional do
   API_KEY = '11451c354c1f95fe60f80d7672bf184a'
   PASSWORD = '14ae838d9e971465af45b35803b8f0a4'
   
+  before(:all) do
+    # clearing generated and downloaded files
+    FileUtils.rm 'config.yml' if File.exist?('config.yml')
+    FileUtils.rm_rf 'default' if File.exist?('default')
+  end
+  
   after(:all) do
     # clearing generated and downloaded files
     FileUtils.rm 'config.yml'
@@ -85,6 +91,7 @@ describe OpencodeTheme::Cli, :functional do
   
   context 'Cleaning cache' do
     it 'cleans the cache' do
+      expect(File.exists? 'default').to eq true
       FileUtils.cd 'default'
       output = capture(:stdout) { subject.clean }
       FileUtils.cd '..'
@@ -94,6 +101,7 @@ describe OpencodeTheme::Cli, :functional do
   
   context 'Download' do
     it 'downloads all files' do
+      expect(File.exists? 'default').to eq true
       FileUtils.cd 'default'
       output = capture(:stdout) { subject.download }
       FileUtils.cd '..'
@@ -105,6 +113,7 @@ describe OpencodeTheme::Cli, :functional do
     end
     
     it 'downloads a single file' do
+      expect(File.exists? 'default').to eq true
       FileUtils.cd 'default'
       output = capture(:stdout) { subject.download FILE_NAME }
       FileUtils.cd '..'
@@ -116,6 +125,7 @@ describe OpencodeTheme::Cli, :functional do
   
   context 'Upload' do
     it 'uploads all files' do
+      expect(File.exists? 'default').to eq true
       FileUtils.cd 'default'
       output = capture(:stdout) { subject.upload }
       FileUtils.cd '..'
@@ -126,6 +136,7 @@ describe OpencodeTheme::Cli, :functional do
     end
     
     it 'uploads a single file' do
+      expect(File.exists? 'default').to eq true
       FileUtils.cd 'default'
       output = capture(:stdout) { subject.upload FILE_NAME }
       FileUtils.cd '..'
@@ -139,7 +150,6 @@ describe OpencodeTheme::Cli, :functional do
     let(:output) { capture(:stdout) { subject.systeminfo } }
     
     it 'displays system information' do
-      pending 'redmine issue 37576'
       expect(output).not_to be_nil
     end
   end
