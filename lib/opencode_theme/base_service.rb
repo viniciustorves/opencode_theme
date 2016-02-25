@@ -11,53 +11,57 @@ module OpencodeTheme
   end
 
   def self.check_config
-    response = opencode_theme.post('/api/check', query: { theme_id: config[:theme_id] })
+    response = opencode_theme.post('/api/check', query: { theme_id: config[:theme_id],
+                                                          gem_version: OpencodeTheme::VERSION })
     { success: response.success?, response: JSON.parse(response.body) }
   end
 
   def self.list
-    response = opencode_theme.get('/api/list')
+    response = opencode_theme.get('/api/list', query: { gem_version: OpencodeTheme::VERSION })
     { success: response.success?, response: JSON.parse(response.body) }
   end
 
   def self.clean
-    response = opencode_theme.post('/api/clean_cache', query: { theme_id: config[:theme_id] })
+    response = opencode_theme.post('/api/clean_cache', query: { theme_id: config[:theme_id],
+                                                                gem_version: OpencodeTheme::VERSION })
     { success: response.success?, response: JSON.parse(response.body) }
   end
 
   def self.theme_delete(theme_id)
-    response = opencode_theme.delete("/api/themes/#{theme_id}", parser: NOOPParser)
+    response = opencode_theme.delete("/api/themes/#{theme_id}", parser: NOOPParser, query: { gem_version: OpencodeTheme::VERSION })
     { success: response.success?, response: JSON.parse(response.body) }
   end
 
   def self.theme_new(theme_base, theme_name)
     response = opencode_theme.post('/api/themes',
-                                   body: { theme: { theme_base: theme_name, name: theme_name } }.to_json,
+                                   query: { gem_version: OpencodeTheme::VERSION },
+                                   body: { theme: { theme_base: theme_name, name: theme_name, gem_version: OpencodeTheme::VERSION } }.to_json,
                                    headers: { 'Content-Type' => 'application/json'},
-                                   parser: NOOPParser)
+                                   parser: NOOPParser )
     assets = response.code == 200 ? JSON.parse(response.body)["assets"] : {}
     { success: response.success?, assets: assets, response: JSON.parse(response.body) }
   end
 
   def self.asset_list
-    response = opencode_theme.get(path, parser: NOOPParser)
-    assets = response.code == 200 ? JSON.parse(response.body)['assets'].collect {|a| a['key'][1..a['key'].length] } : {}
+    response = opencode_theme.get(path, parser: NOOPParser, query: { gem_version: OpencodeTheme::VERSION })
+    assets = response.code == 200 ? JSON.parse(response.body)['assets'].collect {|a| a['key'][1..a['key'].length] } : response.body
     assets
   end
 
   def self.get_asset(asset)
-    response = opencode_theme.get(path, query: { key: "/#{asset}" }, parser: NOOPParser)
-    asset = response.code == 200 ? JSON.parse(response.body) : ''
+    response = opencode_theme.get(path, query: { key: "/#{asset}", gem_version: OpencodeTheme::VERSION }, parser: NOOPParser)
+    asset = response.code == 200 ? JSON.parse(response.body) : JSON.parse(response.body)
     asset
   end
 
   def self.send_asset(data)
+    data[:gem_version] = OpencodeTheme::VERSION
     response = opencode_theme.put(path, body: data)
     response
   end
 
   def self.delete_asset(asset)
-    response = opencode_theme.delete(path, body: { key: "/#{asset}" })
+    response = opencode_theme.delete(path, body: { key: "/#{asset}" }, query: { key: "/#{asset}", gem_version: OpencodeTheme::VERSION })
     response
   end
 
