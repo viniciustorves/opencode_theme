@@ -1,4 +1,3 @@
-# encoding: utf-8
 require 'thor'
 require 'yaml'
 YAML::ENGINE.yamler = 'syck' if defined? Syck
@@ -352,7 +351,7 @@ module OpencodeTheme
         end
         if response['content']
           content = Base64.decode64(response['content'])
-          content = content.force_encoding('UTF-8')
+          content = content.force_encoding('ISO-8859-1')
           format = 'w+b:ISO-8859-1'
         elsif response['attachment']
           content = Base64.decode64(response['attachment'])
