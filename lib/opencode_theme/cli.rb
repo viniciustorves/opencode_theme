@@ -87,7 +87,7 @@ module OpencodeTheme
       end
     end
 
-    desc 'bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE', 'Cria um novo tema com o nome informado'
+    desc 'new API_KEY PASSWORD THEME_NAME THEME_BASE', 'Cria um novo tema com o nome informado'
     method_option :master, type: :boolean, default: false
     def bootstrap(api_key = nil, password = nil, theme_name = 'default', theme_base = 'default')
       OpencodeTheme.config = { api_key: api_key, password: password }
@@ -160,7 +160,7 @@ module OpencodeTheme
       say('Done.', :green) unless options['quiet']
     end
 
-    desc 'remove FILE', 'Remove um arquivo do tema (apenas se o tema nao estiver publicado)'
+    desc 'rm FILE', 'Remove um arquivo do tema (apenas se o tema nao estiver publicado)'
     method_option :quiet, type: :boolean, default: false
     def remove(*keys)
       keys.each do |key|
