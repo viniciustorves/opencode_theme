@@ -5,11 +5,11 @@
 Opencode Theme Command Line tool for developing themes in [TrayCommerce](https://github.com/tray-tecnologia).
 ## Dependencies
 
-*  minimal version of ruby v 2.1.3
+*  Ruby v2.1.3 or greater
 
 ## Installation
 
-Install Opencode Theme from rubygems with the command:
+Install Opencode Theme from RubyGems with the command:
 
 ```bash
 $ gem install opencode_theme
@@ -36,7 +36,7 @@ You can see more in  `opencode -h`, and details here: [CLI Commands](http://dev.
 
 ## Versioning
 
-OpencodeTheme follows the [Semantic Versioning](http://semver.org/) standard.
+Opencode Theme follows the [Semantic Versioning](http://semver.org/) standard.
 
 ## Issues
 
@@ -48,16 +48,17 @@ Please see [CONTRIBUTING.md](https://github.com/tray-tecnologia/opencode_theme/b
 
 ## Release
 
-Follow this steps to release a new version of the gem.
+Follow this steps to release a new version of the gem:
 
 1. Test if everything is running ok;
 2. Change version of the gem on `VERSION` constant;
 3. Add the release date on the `CHANGELOG`;
 4. Do a commit "vX.X.X", follow the semantic version;
-5. Run `$ rake release`, this will send the gem to the rubygems;
-6. Check if the gem is on the rubygems and the tags are correct on the github;
+5. Run `$ rake release`, this will send the gem to the RubyGems;
+6. Check if the gem is on the RubyGems and the tags are correct on the github;
 
 This gem was created and is maintained by [TrayCommerce](https://github.com/tray-tecnologia).
+
 ![Tray-logo](https://avatars1.githubusercontent.com/u/3370163?v=3&s=220)
 
 
