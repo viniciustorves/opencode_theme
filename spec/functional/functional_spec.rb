@@ -157,14 +157,14 @@ describe OpencodeTheme::Cli, :functional do
     let(:output) { capture(:stdout) { subject.help } }
     it 'displays help about each command' do
       expect(output).to include 'Commands:'
-      expect(output).to include 'bootstrap API_KEY PASSWORD THEME_NAME THEME_BASE'
+      expect(output).to include 'new API_KEY PASSWORD THEME_NAME THEME_BASE'
       expect(output).to include 'clean'
       expect(output).to include 'configure API_KEY PASSWORD THEME_ID'
       expect(output).to include 'download FILE'
       expect(output).to include 'help [COMMAND]'
       expect(output).to include 'list'
       expect(output).to include 'open'
-      expect(output).to include 'remove FILE'
+      expect(output).to include 'rm FILE'
       expect(output).to include 'systeminfo'
       expect(output).to include 'upload FILE'
       expect(output).to include 'watch'
