@@ -5,17 +5,28 @@ describe OpencodeTheme::Cli, :functional do
   FILE_NAME = 'layouts/default.html'
   API_KEY = '11451c354c1f95fe60f80d7672bf184a'
   PASSWORD = '14ae838d9e971465af45b35803b8f0a4'
+  THEME_NAME = 'TA Test Theme'
 
   before(:all) do
     # clearing generated and downloaded files
     FileUtils.rm_rf 'config.yml' if File.exist?('config.yml')
-    FileUtils.rm_rf 'default' if File.exist?('default')
+    FileUtils.rm_rf THEME_NAME if File.exist?('default')
   end
 
   after(:all) do
+    # deleting created theme
+    FileUtils.cd THEME_NAME
+    config = YAML.load_file 'config.yml'
+    res = OpencodeTheme.theme_delete(config[:theme_id])
+    if res[:success]
+      puts "  deleted theme #{config[:theme_id]}"
+    else
+      puts "  THEME #{config[:theme_id]} NOT DELETED! DELETE MANUALLY!"
+    end
+    FileUtils.cd '..'
     # clearing generated and downloaded files
     FileUtils.rm_rf 'config.yml'
-    FileUtils.rm_rf 'default'
+    FileUtils.rm_rf THEME_NAME
   end
 
   context 'Invalid or Inexistent Configuration' do
@@ -68,12 +79,12 @@ describe OpencodeTheme::Cli, :functional do
 
   context 'Bootstrap' do
     it 'create new theme' do
-      output = capture(:stdout) { subject.bootstrap API_KEY, PASSWORD }
+      output = capture(:stdout) { subject.bootstrap API_KEY, PASSWORD, THEME_NAME }
       FileUtils.cd '..'
       expect(output).to include 'Configuration [OK]'
-      expect(output).to include 'Create default theme on store'
-      expect(output).to include 'Saving configuration to default'
-      expect(output).to include 'Downloading default assets from Opencode'
+      expect(output).to include "Create #{THEME_NAME} theme on store"
+      expect(output).to include "Saving configuration to #{THEME_NAME}"
+      expect(output).to include "Downloading #{THEME_NAME} assets from Opencode"
       expect(output).to include "Downloaded: #{FILE_NAME}"
       expect(output).to include 'Done.'
     end
@@ -90,8 +101,8 @@ describe OpencodeTheme::Cli, :functional do
 
   context 'Cleaning cache' do
     it 'cleans the cache' do
-      expect(File.exist? 'default').to eq true
-      FileUtils.cd 'default'
+      expect(File.exist? THEME_NAME).to eq true
+      FileUtils.cd THEME_NAME
       output = capture(:stdout) { subject.clean }
       FileUtils.cd '..'
       expect(output).to include 'Clean cache [OK]'
@@ -100,8 +111,8 @@ describe OpencodeTheme::Cli, :functional do
 
   context 'Download' do
     it 'downloads all files' do
-      expect(File.exist? 'default').to eq true
-      FileUtils.cd 'default'
+      expect(File.exist? THEME_NAME).to eq true
+      FileUtils.cd THEME_NAME
       output = capture(:stdout) { subject.download }
       FileUtils.cd '..'
       expect(output).to include 'Downloaded'
@@ -112,8 +123,8 @@ describe OpencodeTheme::Cli, :functional do
     end
 
     it 'downloads a single file' do
-      expect(File.exist? 'default').to eq true
-      FileUtils.cd 'default'
+      expect(File.exist? THEME_NAME).to eq true
+      FileUtils.cd THEME_NAME
       output = capture(:stdout) { subject.download FILE_NAME }
       FileUtils.cd '..'
       expect(output).to include "Downloaded: #{FILE_NAME}"
@@ -124,8 +135,8 @@ describe OpencodeTheme::Cli, :functional do
 
   context 'Upload' do
     it 'uploads all files' do
-      expect(File.exist? 'default').to eq true
-      FileUtils.cd 'default'
+      expect(File.exist? THEME_NAME).to eq true
+      FileUtils.cd THEME_NAME
 
       output = capture(:stdout) { subject.upload }
       FileUtils.cd '..'
@@ -135,8 +146,8 @@ describe OpencodeTheme::Cli, :functional do
     end
 
     it 'uploads a single file' do
-      expect(File.exist? 'default').to eq true
-      FileUtils.cd 'default'
+      expect(File.exist? THEME_NAME).to eq true
+      FileUtils.cd THEME_NAME
       output = capture(:stdout) { subject.upload FILE_NAME }
       FileUtils.cd '..'
       expect(output).to include "File uploaded: #{FILE_NAME}"
