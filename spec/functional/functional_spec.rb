@@ -3,8 +3,8 @@ require_relative '../spec_helper'
 describe OpencodeTheme::Cli, :functional do
   STORE_ID = '430692'
   FILE_NAME = 'layouts/default.html'
-  API_KEY = '11451c354c1f95fe60f80d7672bf184a'
-  PASSWORD = '14ae838d9e971465af45b35803b8f0a4'
+  API_KEY = 'abe14f7154762dd43c3e499bab004abd'
+  PASSWORD = '2ff62ce74b4d9b7da6e09e1a7d0767c7'
   THEME_NAME = 'TA Test Theme'
 
   before(:all) do
